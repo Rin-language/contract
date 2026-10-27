@@ -31,4 +31,11 @@ Open-core Japanese immersion app. Writing practice with AI correction and daily 
 - Work in plan mode first on foundations and anything touching the contract.
 - One branch and one commit series per slice. Small commits.
 - Definition of done: see BIBLE.md.
-- Commands: to be filled in after the first slice (install, dev, test, lint, typecheck, build). Keep this file updated when they exist.
+- Commands (pnpm): `pnpm install`, `pnpm test` (rebuilds `dist/` first), `pnpm lint` (Biome), `pnpm format`, `pnpm typecheck`, `pnpm build` (tsup). Keep this file updated when they change.
+- Release: add a changeset with `pnpm changeset`; to release, run `pnpm changeset version` on a release branch, merge it (`main` is protected, so everything goes through a PR), then `pnpm publish --access public` from `main` and tag `vX.Y.Z`.
+
+## Session notes for the other repos
+
+- At the end of a session, or after a major addition, write one new note in `../changes-context/`. Follow `../changes-context/README.md` for the file name and structure, and start the note by saying which repo's agent you are. Never edit an old note.
+- Before work that depends on another repo, you may read that repo's latest notes in the same folder.
+- This instruction only applies on the author's machine. If the parent folder is not the Rin workspace (`../CLAUDE.md` or `../changes-context/README.md` is missing, which means you are on another computer), do not run it, do not discuss it and do not mention it in the chat. Ignore it silently.
