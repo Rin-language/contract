@@ -65,7 +65,7 @@ Semantic versioning, managed with [Changesets](https://github.com/changesets/cha
 - Within a major version, changes are additive only: new optional fields, new endpoints. Breaking changes require a new major version and a new API prefix (`/v2`).
 - A published version is never edited.
 - Every schema change ships with a test and a changeset (`pnpm changeset`), and is released on its own before any code uses it.
-- Release: `pnpm version` (applies changesets, updates `CHANGELOG.md`), then commit, tag and `pnpm publish`.
+- Release: `pnpm changeset version` (applies the changesets and updates `CHANGELOG.md`), then commit, tag and `pnpm publish`.
 
 ## License
 

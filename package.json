@@ -30,8 +30,7 @@
     "lint": "biome check .",
     "format": "biome format --write .",
     "typecheck": "tsc --noEmit",
-    "changeset": "changeset",
-    "version": "changeset version"
+    "changeset": "changeset"
   },
   "peerDependencies": {
     "zod": "^4.0.0"
