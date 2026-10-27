@@ -4,6 +4,8 @@ Shared [Zod](https://zod.dev) schemas and inferred TypeScript types for the Rin 
 
 Current scope: text correction (`JlptLevel`, `CorrectionRequest`, `Edit`, `CorrectionResponse`, `ErrorType`), the server limits (`LimitsResponse`) and `API_VERSION`. Every object schema is strict: unknown keys are rejected.
 
+Full field-by-field reference, with examples: [docs/api.md](docs/api.md).
+
 ## Install
 
 Zod is a peer dependency, so install it alongside the package:
