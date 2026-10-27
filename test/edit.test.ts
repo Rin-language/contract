@@ -72,7 +72,7 @@ describe("Edit", () => {
     expect(Edit.safeParse(withoutErrorType).success).toBe(false);
   });
 
-  it.each(["particles", "keigo_politeness", "orthography"])(
+  it.each(["particles", "keigo_politeness", "orthography", "other"])(
     "accepts the category %s as error type",
     (errorType) => {
       expect(Edit.safeParse({ ...validEdit, errorType }).success).toBe(true);
@@ -84,9 +84,9 @@ describe("Edit", () => {
   });
 
   it("rejects an unknown error type", () => {
-    expect(Edit.safeParse({ ...validEdit, errorType: "other" }).success).toBe(
-      false,
-    );
+    expect(
+      Edit.safeParse({ ...validEdit, errorType: "unknown_category" }).success,
+    ).toBe(false);
   });
 
   it("rejects a non-string error type", () => {

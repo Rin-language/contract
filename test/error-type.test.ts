@@ -22,6 +22,7 @@ const expectedErrorTypes = [
   "vocabulary_word_choice",
   "style_and_discourse",
   "punctuation",
+  "other",
 ] as const;
 
 describe("ErrorType", () => {
@@ -36,7 +37,8 @@ describe("ErrorType", () => {
   });
 
   it.each([
-    "other",
+    "unknown_category",
+    "Other",
     "particle",
     "Particles",
     "word-order",

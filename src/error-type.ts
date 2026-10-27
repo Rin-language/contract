@@ -21,5 +21,6 @@ export const ErrorType = z.enum([
   "vocabulary_word_choice",
   "style_and_discourse",
   "punctuation",
+  "other",
 ]);
 export type ErrorType = z.infer<typeof ErrorType>;
