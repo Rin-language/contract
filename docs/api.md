@@ -81,7 +81,7 @@ For the request above, `"学校で行きます"`:
 
 ## ErrorType
 
-A closed enum. The first twelve come from the grammar catalog, the last eight cover error kinds the catalog does not.
+A closed enum. The first twelve come from the grammar catalog, the next eight cover error kinds the catalog does not, and `other` is the catch-all.
 
 | Value | Covers |
 |---|---|
@@ -105,12 +105,13 @@ A closed enum. The first twelve come from the grammar catalog, the last eight co
 | `vocabulary_word_choice` | Unnatural collocation, literal translation, false friends |
 | `style_and_discourse` | Pronoun overuse, redundant repetition, abrupt sentence endings |
 | `punctuation` | Punctuation |
+| `other` | Catch-all for an error that fits no other category, and the natural default (see below) |
 
 ### A default value must always be handled
 
 The list will grow: each new category ships in a new minor version of the contract. Nothing may break when a value is not one the code knows, so both sides handle a default.
 
-- **Server.** A response must never contain a value outside `ErrorType`, whatever the model or the catalog produced. The server maps any category it cannot match to a configured default category, and never drops the whole correction because of it. The default is a server setting, validated at startup against `ErrorType`.
+- **Server.** A response must never contain a value outside `ErrorType`, whatever the model or the catalog produced. The server maps any category it cannot match to a configured default category, `other` unless the deployment chooses another, and never drops the whole correction because of it. The default is a server setting, validated at startup against `ErrorType`.
 - **Client.** Every place that depends on `errorType` (underline colour, label, icon, grouping) needs a default branch with a neutral rendering. Do not write an exhaustive `switch` without one.
 - **Version skew.** The schema is closed, so a client validating with an older version of the contract rejects a response that uses a newer category. Keep the contract version up to date, and treat that failure as "client needs an update" rather than as a corrupt response.
 
