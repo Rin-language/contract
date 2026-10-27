@@ -1,6 +1,6 @@
 {
   "name": "@rin-language/contract",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Shared Zod schemas and types for the Rin API.",
   "license": "MIT",
   "repository": {
