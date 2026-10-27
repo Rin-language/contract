@@ -2,7 +2,7 @@
 
 Shared [Zod](https://zod.dev) schemas and inferred TypeScript types for the Rin API. This package is the single source of truth between the client, the server and any other consumer. It contains schemas only: no business logic, no server or client code.
 
-Current scope: text correction (`JlptLevel`, `CorrectionRequest`, `Edit`, `CorrectionResponse`) and the API constants (`API_VERSION`, `MAX_TEXT_LENGTH`, `MAX_EXPLANATION_LENGTH`, `MAX_EDITS`). Every object schema is strict: unknown keys are rejected.
+Current scope: text correction (`JlptLevel`, `CorrectionRequest`, `Edit`, `CorrectionResponse`, `ErrorType`), the server limits (`LimitsResponse`) and `API_VERSION`. Every object schema is strict: unknown keys are rejected.
 
 ## Install
 
@@ -23,7 +23,15 @@ import {
 const request = CorrectionRequest.parse({ text: "私は学生です", level: "N4" });
 ```
 
-Validate all external input (HTTP bodies, model output) with these schemas at the boundary. Checking that an edit's `start` and `end` fit the original text depends on that text, so it lives in `core`, not here.
+Validate all external input (HTTP bodies, model output) with these schemas at the boundary.
+
+## Conventions
+
+- **Edit positions:** `start` and `end` are UTF-16 code units (the indices `String.prototype.slice` uses) into the submitted text. Edits are sorted by position and never overlap. Checking that they fit the original text depends on that text, so it lives in `core`, not here.
+- **Corrected text:** there is no `correctedText` field. Apply the edits to the original text; the struck-through original of an edit is `text.slice(start, end)`.
+- **Error types:** `Edit.errorType` is one of the values of `ERROR_TYPES_BY_GROUP` (five groups, e.g. `orthography`, `grammar_and_syntax`). The list is closed: there is no `other`.
+- **Score:** `CorrectionResponse.score` is an integer from 0 to 100.
+- **Size limits are not in the contract.** The server enforces them from its own configuration and exposes them as `LimitsResponse` (`maxTextLength`, `maxEdits`, `maxExplanationLength`). The schemas here only check shape, so a consumer must enforce its server's limits before spending any model call.
 
 ## Link a local copy into `core`
 

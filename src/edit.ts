@@ -3,6 +3,7 @@ import { ErrorType } from "./error-type.js";
 
 export const Edit = z
   .strictObject({
+    // UTF-16 code units, as in String.prototype.slice, so a browser can use them directly.
     start: z.number().int().nonnegative(),
     end: z.number().int().nonnegative(),
     replacement: z.string(),
