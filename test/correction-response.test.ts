@@ -7,6 +7,8 @@ const validEdit = {
   end: 3,
   replacement: "私は",
   errorType: "particle",
+  jlptLevel: "N5",
+  grammarPointId: "ni_particle",
   explanation: "Particle fix.",
 };
 const validResponse = { edits: [validEdit], score: 80 };

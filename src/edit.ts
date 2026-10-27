@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { JlptLevel } from "./jlpt-level.js";
 
 export const Edit = z
   .strictObject({
@@ -8,6 +9,9 @@ export const Edit = z
     replacement: z.string(),
     // A catalog category; the catalog grows, so only `core` can check the value.
     errorType: z.string().min(1),
+    jlptLevel: JlptLevel,
+    // Null when the catalog has no matching grammar point.
+    grammarPointId: z.string().min(1).nullable(),
     explanation: z.string().min(1),
   })
   .refine((edit) => edit.start <= edit.end, {

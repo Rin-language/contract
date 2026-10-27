@@ -1,11 +1,14 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 import { Edit } from "../src/edit.js";
+import type { JlptLevel } from "../src/jlpt-level.js";
 
 const validEdit = {
   start: 0,
   end: 3,
   replacement: "私は",
   errorType: "particle",
+  jlptLevel: "N5",
+  grammarPointId: "ni_particle",
   explanation: "Particle fix.",
 };
 
@@ -83,6 +86,50 @@ describe("Edit", () => {
     expect(Edit.safeParse({ ...validEdit, errorType: 3 }).success).toBe(false);
   });
 
+  it.each(["N5", "N4", "N3", "N2", "N1"])(
+    "accepts the level %s",
+    (jlptLevel) => {
+      expect(Edit.safeParse({ ...validEdit, jlptLevel }).success).toBe(true);
+    },
+  );
+
+  it("rejects an unknown level", () => {
+    expect(Edit.safeParse({ ...validEdit, jlptLevel: "N6" }).success).toBe(
+      false,
+    );
+  });
+
+  it("rejects a missing level", () => {
+    const { jlptLevel: _jlptLevel, ...withoutLevel } = validEdit;
+
+    expect(Edit.safeParse(withoutLevel).success).toBe(false);
+  });
+
+  it("accepts a null grammar point when the catalog has no match", () => {
+    expect(Edit.safeParse({ ...validEdit, grammarPointId: null }).success).toBe(
+      true,
+    );
+  });
+
+  it("rejects an empty grammar point id", () => {
+    expect(Edit.safeParse({ ...validEdit, grammarPointId: "" }).success).toBe(
+      false,
+    );
+  });
+
+  it("rejects a missing grammar point id", () => {
+    const { grammarPointId: _grammarPointId, ...withoutGrammarPoint } =
+      validEdit;
+
+    expect(Edit.safeParse(withoutGrammarPoint).success).toBe(false);
+  });
+
+  it("rejects a non-string grammar point id", () => {
+    expect(Edit.safeParse({ ...validEdit, grammarPointId: 7 }).success).toBe(
+      false,
+    );
+  });
+
   it("rejects an unknown key", () => {
     expect(Edit.safeParse({ ...validEdit, severity: "high" }).success).toBe(
       false,
@@ -95,6 +142,8 @@ describe("Edit", () => {
       end: number;
       replacement: string;
       errorType: string;
+      jlptLevel: JlptLevel;
+      grammarPointId: string | null;
       explanation: string;
     }>();
   });
