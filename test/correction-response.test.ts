@@ -95,3 +95,37 @@ describe("CorrectionResponse size", () => {
     );
   });
 });
+
+describe("CorrectionResponse edit order", () => {
+  const editAt = (start: number, end: number) => ({ ...validEdit, start, end });
+  const parse = (edits: unknown[]) =>
+    CorrectionResponse.safeParse({ edits, score: 50 }).success;
+
+  it("accepts edits sorted by position", () => {
+    expect(parse([editAt(0, 2), editAt(5, 8)])).toBe(true);
+  });
+
+  it("accepts an edit that starts where the previous one ends", () => {
+    expect(parse([editAt(0, 3), editAt(3, 6)])).toBe(true);
+  });
+
+  it("accepts an insertion at the end of the previous edit", () => {
+    expect(parse([editAt(0, 3), editAt(3, 3)])).toBe(true);
+  });
+
+  it("rejects overlapping edits", () => {
+    expect(parse([editAt(0, 5), editAt(3, 8)])).toBe(false);
+  });
+
+  it("rejects an insertion inside a replaced span", () => {
+    expect(parse([editAt(0, 5), editAt(2, 2)])).toBe(false);
+  });
+
+  it("rejects the same edit twice", () => {
+    expect(parse([editAt(0, 3), editAt(0, 3)])).toBe(false);
+  });
+
+  it("rejects edits not sorted by position", () => {
+    expect(parse([editAt(5, 8), editAt(0, 2)])).toBe(false);
+  });
+});
