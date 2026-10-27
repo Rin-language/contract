@@ -46,7 +46,7 @@ One correction of a span of the submitted text.
 | `errorType` | `ErrorType` | yes | One of the categories listed below. |
 | `jlptLevel` | `JlptLevel` | yes | Always set. The catalog level when a grammar point matched, the model's estimate otherwise. |
 | `grammarPointId` | string or `null` | yes | Id of the matching catalog grammar point, or `null` when the catalog has no match. The key itself is required. An empty string is rejected. |
-| `explanation` | string | yes | Not empty. Why the span is wrong. |
+| `explanation` | string | yes | Not blank: at least one character that is not whitespace after `trim()`. Why the span is wrong. |
 
 ### Ordering rule
 

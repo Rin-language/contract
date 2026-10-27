@@ -60,6 +60,12 @@ describe("Edit", () => {
     );
   });
 
+  it("rejects a whitespace-only explanation", () => {
+    expect(
+      Edit.safeParse({ ...validEdit, explanation: " \n\t　 " }).success,
+    ).toBe(false);
+  });
+
   it("rejects a missing replacement", () => {
     const { replacement: _replacement, ...withoutReplacement } = validEdit;
 

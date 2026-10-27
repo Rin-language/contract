@@ -12,7 +12,12 @@ export const Edit = z
     jlptLevel: JlptLevel,
     // Null when the catalog has no matching grammar point.
     grammarPointId: z.string().min(1).nullable(),
-    explanation: z.string().min(1),
+    explanation: z
+      .string()
+      .refine(
+        (text) => text.trim().length > 0,
+        "explanation must not be blank",
+      ),
   })
   .refine((edit) => edit.start <= edit.end, {
     message: "start must not be greater than end",
