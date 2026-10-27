@@ -1,15 +1,11 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
-import { API_VERSION, MAX_TEXT_LENGTH } from "../src/constants.js";
+import { API_VERSION } from "../src/constants.js";
 import { CorrectionRequest } from "../src/correction-request.js";
 import type { JlptLevel } from "../src/jlpt-level.js";
 
 describe("constants", () => {
   it("exposes the API version", () => {
     expect(API_VERSION).toBe("v1");
-  });
-
-  it("limits the text to 2000 characters", () => {
-    expect(MAX_TEXT_LENGTH).toBe(2000);
   });
 });
 
@@ -29,12 +25,6 @@ describe("CorrectionRequest", () => {
     expect(result.success).toBe(true);
   });
 
-  it("accepts text of exactly MAX_TEXT_LENGTH characters", () => {
-    const text = "あ".repeat(MAX_TEXT_LENGTH);
-
-    expect(CorrectionRequest.safeParse({ text }).success).toBe(true);
-  });
-
   it("rejects empty text", () => {
     expect(CorrectionRequest.safeParse({ text: "" }).success).toBe(false);
   });
@@ -43,12 +33,6 @@ describe("CorrectionRequest", () => {
     expect(CorrectionRequest.safeParse({ text: " \n\t　 " }).success).toBe(
       false,
     );
-  });
-
-  it("rejects text of MAX_TEXT_LENGTH + 1 characters", () => {
-    const text = "あ".repeat(MAX_TEXT_LENGTH + 1);
-
-    expect(CorrectionRequest.safeParse({ text }).success).toBe(false);
   });
 
   it("rejects a missing text", () => {
@@ -83,5 +67,13 @@ describe("CorrectionRequest", () => {
       text: string;
       level?: JlptLevel | undefined;
     }>();
+  });
+});
+
+describe("CorrectionRequest size", () => {
+  it("leaves the text length to the server configuration", () => {
+    const text = "あ".repeat(100_000);
+
+    expect(CorrectionRequest.safeParse({ text }).success).toBe(true);
   });
 });

@@ -1,5 +1,4 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
-import { MAX_EXPLANATION_LENGTH } from "../src/constants.js";
 import { Edit } from "../src/edit.js";
 
 const validEdit = {
@@ -24,12 +23,6 @@ describe("Edit", () => {
     expect(Edit.safeParse({ ...validEdit, replacement: "" }).success).toBe(
       true,
     );
-  });
-
-  it("accepts an explanation of exactly MAX_EXPLANATION_LENGTH characters", () => {
-    const explanation = "a".repeat(MAX_EXPLANATION_LENGTH);
-
-    expect(Edit.safeParse({ ...validEdit, explanation }).success).toBe(true);
   });
 
   it("rejects start greater than end", () => {
@@ -62,12 +55,6 @@ describe("Edit", () => {
     );
   });
 
-  it("rejects an explanation of MAX_EXPLANATION_LENGTH + 1 characters", () => {
-    const explanation = "a".repeat(MAX_EXPLANATION_LENGTH + 1);
-
-    expect(Edit.safeParse({ ...validEdit, explanation }).success).toBe(false);
-  });
-
   it("rejects a missing replacement", () => {
     const { replacement: _replacement, ...withoutReplacement } = validEdit;
 
@@ -87,5 +74,13 @@ describe("Edit", () => {
       replacement: string;
       explanation: string;
     }>();
+  });
+});
+
+describe("Edit size", () => {
+  it("leaves the explanation length to the server configuration", () => {
+    const explanation = "a".repeat(100_000);
+
+    expect(Edit.safeParse({ ...validEdit, explanation }).success).toBe(true);
   });
 });

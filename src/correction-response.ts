@@ -1,8 +1,7 @@
 import { z } from "zod";
-import { MAX_EDITS } from "./constants.js";
 import { Edit } from "./edit.js";
 
 export const CorrectionResponse = z.strictObject({
-  edits: z.array(Edit).max(MAX_EDITS),
+  edits: z.array(Edit),
 });
 export type CorrectionResponse = z.infer<typeof CorrectionResponse>;

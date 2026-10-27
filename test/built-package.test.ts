@@ -15,9 +15,6 @@ describe("built package", () => {
         "CorrectionResponse",
         "Edit",
         "JlptLevel",
-        "MAX_EDITS",
-        "MAX_EXPLANATION_LENGTH",
-        "MAX_TEXT_LENGTH",
       ].sort(),
     );
   });

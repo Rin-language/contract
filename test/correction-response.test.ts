@@ -1,5 +1,4 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
-import { MAX_EDITS } from "../src/constants.js";
 import { CorrectionResponse } from "../src/correction-response.js";
 import type { Edit } from "../src/edit.js";
 
@@ -19,18 +18,6 @@ describe("CorrectionResponse", () => {
 
   it("accepts a response with no edit", () => {
     expect(CorrectionResponse.safeParse({ edits: [] }).success).toBe(true);
-  });
-
-  it("accepts exactly MAX_EDITS edits", () => {
-    const edits = Array.from({ length: MAX_EDITS }, () => validEdit);
-
-    expect(CorrectionResponse.safeParse({ edits }).success).toBe(true);
-  });
-
-  it("rejects more than MAX_EDITS edits", () => {
-    const edits = Array.from({ length: MAX_EDITS + 1 }, () => validEdit);
-
-    expect(CorrectionResponse.safeParse({ edits }).success).toBe(false);
   });
 
   it("rejects a response with an invalid edit", () => {
@@ -64,5 +51,17 @@ describe("CorrectionResponse", () => {
 
   it("infers the response type from the schema", () => {
     expectTypeOf<CorrectionResponse>().toEqualTypeOf<{ edits: Edit[] }>();
+  });
+});
+
+describe("CorrectionResponse size", () => {
+  it("leaves the number of edits to the server configuration", () => {
+    const edits = Array.from({ length: 1000 }, (_, index) => ({
+      ...validEdit,
+      start: index,
+      end: index,
+    }));
+
+    expect(CorrectionResponse.safeParse({ edits }).success).toBe(true);
   });
 });
