@@ -6,7 +6,7 @@ const validEdit = {
   start: 0,
   end: 3,
   replacement: "私は",
-  errorType: "particle_wrong_choice",
+  errorType: "particle",
   explanation: "Particle fix.",
 };
 const validResponse = { edits: [validEdit], score: 80 };
