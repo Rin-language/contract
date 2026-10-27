@@ -1,12 +1,13 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 import { Edit } from "../src/edit.js";
+import type { ErrorType } from "../src/error-type.js";
 import type { JlptLevel } from "../src/jlpt-level.js";
 
 const validEdit = {
   start: 0,
   end: 3,
   replacement: "私は",
-  errorType: "particle",
+  errorType: "particles",
   jlptLevel: "N5",
   grammarPointId: "ni_particle",
   explanation: "Particle fix.",
@@ -71,8 +72,8 @@ describe("Edit", () => {
     expect(Edit.safeParse(withoutErrorType).success).toBe(false);
   });
 
-  it.each(["particle", "prohibition_permission", "new_catalog_category"])(
-    "accepts the catalog category %s as error type",
+  it.each(["particles", "keigo_politeness", "orthography"])(
+    "accepts the category %s as error type",
     (errorType) => {
       expect(Edit.safeParse({ ...validEdit, errorType }).success).toBe(true);
     },
@@ -80,6 +81,12 @@ describe("Edit", () => {
 
   it("rejects an empty error type", () => {
     expect(Edit.safeParse({ ...validEdit, errorType: "" }).success).toBe(false);
+  });
+
+  it("rejects an unknown error type", () => {
+    expect(Edit.safeParse({ ...validEdit, errorType: "other" }).success).toBe(
+      false,
+    );
   });
 
   it("rejects a non-string error type", () => {
@@ -141,7 +148,7 @@ describe("Edit", () => {
       start: number;
       end: number;
       replacement: string;
-      errorType: string;
+      errorType: ErrorType;
       jlptLevel: JlptLevel;
       grammarPointId: string | null;
       explanation: string;

@@ -14,6 +14,7 @@ describe("built package", () => {
         "CorrectionRequest",
         "CorrectionResponse",
         "Edit",
+        "ErrorType",
         "JlptLevel",
         "LimitsResponse",
       ].sort(),
