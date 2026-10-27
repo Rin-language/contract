@@ -6,6 +6,7 @@ const validEdit = {
   start: 0,
   end: 3,
   replacement: "私は",
+  errorType: "particle_wrong_choice",
   explanation: "Particle fix.",
 };
 

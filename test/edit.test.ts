@@ -1,10 +1,12 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 import { Edit } from "../src/edit.js";
+import type { ErrorType } from "../src/error-type.js";
 
 const validEdit = {
   start: 0,
   end: 3,
   replacement: "私は",
+  errorType: "particle_wrong_choice",
   explanation: "Particle fix.",
 };
 
@@ -61,6 +63,18 @@ describe("Edit", () => {
     expect(Edit.safeParse(withoutReplacement).success).toBe(false);
   });
 
+  it("rejects a missing error type", () => {
+    const { errorType: _errorType, ...withoutErrorType } = validEdit;
+
+    expect(Edit.safeParse(withoutErrorType).success).toBe(false);
+  });
+
+  it("rejects an unknown error type", () => {
+    expect(Edit.safeParse({ ...validEdit, errorType: "other" }).success).toBe(
+      false,
+    );
+  });
+
   it("rejects an unknown key", () => {
     expect(Edit.safeParse({ ...validEdit, severity: "high" }).success).toBe(
       false,
@@ -72,6 +86,7 @@ describe("Edit", () => {
       start: number;
       end: number;
       replacement: string;
+      errorType: ErrorType;
       explanation: string;
     }>();
   });
