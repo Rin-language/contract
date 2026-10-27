@@ -1,0 +1,53 @@
+{
+  "name": "@rin-language/contract",
+  "version": "0.0.0",
+  "description": "Shared Zod schemas and types for the Rin API.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Rin-language/contract.git"
+  },
+  "packageManager": "pnpm@10.34.9",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "typecheck": "tsc --noEmit",
+    "changeset": "changeset",
+    "version": "changeset version"
+  },
+  "peerDependencies": {
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.6.3",
+    "@changesets/cli": "3.0.3",
+    "@types/node": "^24.19.2",
+    "tsup": "9.0.0",
+    "typescript": "6.0.3",
+    "vitest": "5.0.5",
+    "zod": "4.6.7"
+  },
+  "pnpm": {
+    "ignoredBuiltDependencies": [
+      "esbuild"
+    ]
+  }
+}
