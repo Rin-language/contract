@@ -15,6 +15,7 @@ describe("public entry point", () => {
         "DayKey",
         "Edit",
         "ErrorType",
+        "HealthResponse",
         "Id",
         "IsoDateTime",
         "LanguageCapabilities",
