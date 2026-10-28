@@ -11,10 +11,12 @@ describe("built package", () => {
     expect(Object.keys(api).sort()).toEqual(
       [
         "API_VERSION",
+        "CapabilitiesResponse",
         "CorrectionRequest",
         "CorrectionResponse",
         "Edit",
         "ErrorType",
+        "LanguageCapabilities",
         "LanguageCode",
         "Level",
         "LimitsResponse",

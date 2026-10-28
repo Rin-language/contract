@@ -1,3 +1,7 @@
+export {
+  CapabilitiesResponse,
+  LanguageCapabilities,
+} from "./capabilities-response.js";
 export { API_VERSION } from "./constants.js";
 export { CorrectionRequest } from "./correction-request.js";
 export { CorrectionResponse } from "./correction-response.js";
