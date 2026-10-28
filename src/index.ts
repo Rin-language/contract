@@ -1,3 +1,4 @@
+export { ApiError, ApiErrorCode } from "./api-error.js";
 export {
   CapabilitiesResponse,
   LanguageCapabilities,

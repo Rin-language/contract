@@ -6,6 +6,8 @@ describe("public entry point", () => {
     expect(Object.keys(api).sort()).toEqual(
       [
         "API_VERSION",
+        "ApiError",
+        "ApiErrorCode",
         "CapabilitiesResponse",
         "CorrectionRequest",
         "CorrectionResponse",
