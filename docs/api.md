@@ -281,17 +281,22 @@ What a client sends to change its profile. It carries **only the fields that cha
 | Field | Type | Required | Rules |
 |---|---|---|---|
 | `displayName` | string | no | Not blank. |
-| `targetLanguage` | `LanguageCode` | no | No default: an absent key leaves the target language unchanged. |
+| `targetLanguage` | `LanguageCode` | no | No default: an absent key leaves the target language unchanged. **When present, `declaredLevel` is required.** |
 | `uiLanguage` | `LanguageCode` | no | |
 | `timezone` | string | no | Not blank. The IANA name is checked by the server. |
-| `declaredLevel` | `Level` | no | In the scale of the target language after the update. |
+| `declaredLevel` | `Level` | with `targetLanguage` | In the scale of the target language after the update. Required when `targetLanguage` is sent. |
 
 - At least one field: an empty update `{}` is rejected.
 - `null` is rejected everywhere. A field cannot be cleared, only changed.
+- **A new target language comes with its level.** A level only makes sense in the scale of its language: changing `targetLanguage` alone would keep, say, `N4` next to French. Such an update is rejected, with the issue on `declaredLevel`. When the user does not know their level yet, the client sends the **lowest level** of the new language, the first item of its `levels` in `CapabilitiesResponse`; the user changes it during onboarding.
 - **No `skillRatings`.** The object is strict, so a client that sends ratings (even `[]`) is rejected with `invalid_request`. Only the server writes ratings.
 
 ```json
-{ "targetLanguage": "fr", "declaredLevel": "B1" }
+{ "targetLanguage": "fr", "declaredLevel": "A1" }
+```
+
+```json
+{ "timezone": "Asia/Tokyo" }
 ```
 
 ## HealthResponse
