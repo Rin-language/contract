@@ -1,6 +1,6 @@
 # Rin (working name)
 
-Open-core Japanese immersion app. Writing practice with AI correction and daily prompts, an epub reader, a streak shared by all activities, and a curated list of native Japanese content (v1). A recommendation/curation system comes in v2.
+Open-core language immersion app, focused on Japanese first but designed to handle several languages. Writing practice with AI correction and daily prompts, an epub reader, a streak shared by all activities, and a curated list of native content in the target language (v1). A recommendation/curation system comes in v2.
 
 @BIBLE.md
 
