@@ -15,6 +15,8 @@
 
 - 5aa81b2: Add `UserProfileUpdate`, what a client sends to change its profile: only the changed fields (all optional, at least one), no default, and no `skillRatings`, so ratings sent by a client are rejected at the boundary. A change of `targetLanguage` must come with its `declaredLevel` (the lowest level of the new language when unknown).
 
+- ec85123: **Required field:** `UserProfile.declaredLevel` is now required. Until the user declares a level, the server sets the lowest level of the target language (the first of its `levels` in `CapabilitiesResponse`); the user changes it during onboarding. No server returns profiles yet, so no existing response breaks.
+
 ## 0.2.0
 
 ### Minor Changes

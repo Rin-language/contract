@@ -21,11 +21,12 @@ Migrating: rename `jlptLevel` to `level`, drop the `JlptLevel` import (use `Leve
 
 ## Additions in 0.2.1
 
-Additive, except for one field: `LanguageCapabilities.skills` is **required**. No server implements `GET /v1/capabilities` yet, so no existing response breaks, but a server built against 0.2.0 must add it.
+Additive, except for two fields that become **required**: `LanguageCapabilities.skills` and `UserProfile.declaredLevel`. No server returns capabilities or profiles yet, so no existing response breaks, but a server built against 0.2.0 must send both.
 
 - Common primitives: `Id`, `IsoDateTime`, `DayKey`, `ActivityKind`.
 - `SkillRating`, and `UserProfile.skillRatings` (read-only, defaults to `[]`).
 - `UserProfileUpdate`: what a client sends to change its profile.
+- `UserProfile.declaredLevel` is required: the server starts it at the lowest level of the language.
 - `LanguageCapabilities.skills`.
 - `HealthResponse`.
 - `ApiError`: optional `error.details`.
@@ -245,7 +246,7 @@ The list is closed, so a client on an older contract version rejects a code adde
 | `targetLanguage` | `LanguageCode` | no | The language being learned. Defaults to `"ja"` when omitted (so a parsed profile always has it). |
 | `uiLanguage` | `LanguageCode` | yes | Language of the interface. |
 | `timezone` | string | yes | Not blank. Whether it is a valid IANA name (`Asia/Bangkok`) is checked by the server, which owns the runtime. |
-| `declaredLevel` | `Level` | no | The level the user says they have, in the scale of `targetLanguage`. Absent until declared. `null` is rejected. |
+| `declaredLevel` | `Level` | yes | The level the user says they have, in the scale of `targetLanguage`. **Always set:** until the user declares one, the server sets the lowest level of the language (the first item of its `levels` in `CapabilitiesResponse`), and the user changes it during onboarding. `null` is rejected. Required since 0.2.1. |
 | `skillRatings` | `SkillRating[]` | no | **Read-only.** The user's ratings, computed by the server. Defaults to `[]` (so a parsed profile always has it). A client never sends it: changes go through `UserProfileUpdate`, which has no such field. |
 
 `UserProfile` is what the server returns. Never validate a client's request with it: its `skillRatings` default would turn a missing field into `[]` and wipe the stored ratings, and its `targetLanguage` default would reset the language to `"ja"`.
