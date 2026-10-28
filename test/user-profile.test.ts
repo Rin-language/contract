@@ -15,10 +15,10 @@ describe("UserProfile", () => {
     expect(UserProfile.safeParse(validProfile).success).toBe(true);
   });
 
-  it("accepts a profile without a declared level", () => {
+  it("rejects a profile without a declared level", () => {
     const { declaredLevel: _declaredLevel, ...withoutLevel } = validProfile;
 
-    expect(UserProfile.safeParse(withoutLevel).success).toBe(true);
+    expect(UserProfile.safeParse(withoutLevel).success).toBe(false);
   });
 
   it("accepts a declared level from another scale", () => {
@@ -143,7 +143,7 @@ describe("UserProfile", () => {
       targetLanguage: string;
       uiLanguage: string;
       timezone: string;
-      declaredLevel?: string | undefined;
+      declaredLevel: string;
       skillRatings: SkillRating[];
     }>();
   });
