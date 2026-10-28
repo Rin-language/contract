@@ -15,6 +15,7 @@ describe("public entry point", () => {
         "LanguageCode",
         "Level",
         "LimitsResponse",
+        "Page",
       ].sort(),
     );
   });

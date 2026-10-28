@@ -20,6 +20,7 @@ describe("built package", () => {
         "LanguageCode",
         "Level",
         "LimitsResponse",
+        "Page",
       ].sort(),
     );
   });

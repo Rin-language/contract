@@ -10,3 +10,4 @@ export { ErrorType } from "./error-type.js";
 export { LanguageCode } from "./language-code.js";
 export { Level } from "./level.js";
 export { LimitsResponse } from "./limits-response.js";
+export { Page } from "./page.js";
