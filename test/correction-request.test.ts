@@ -1,7 +1,7 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 import { API_VERSION } from "../src/constants.js";
 import { CorrectionRequest } from "../src/correction-request.js";
-import type { JlptLevel } from "../src/jlpt-level.js";
+import type { Level } from "../src/level.js";
 
 describe("constants", () => {
   it("exposes the API version", () => {
@@ -39,10 +39,16 @@ describe("CorrectionRequest", () => {
     expect(CorrectionRequest.safeParse({ level: "N5" }).success).toBe(false);
   });
 
-  it("rejects an unknown level", () => {
+  it("rejects an empty level", () => {
     expect(
-      CorrectionRequest.safeParse({ text: "こんにちは", level: "N9" }).success,
+      CorrectionRequest.safeParse({ text: "こんにちは", level: "" }).success,
     ).toBe(false);
+  });
+
+  it("accepts a level from another scale", () => {
+    expect(
+      CorrectionRequest.safeParse({ text: "Bonjour", level: "B1" }).success,
+    ).toBe(true);
   });
 
   it("rejects an unknown key", () => {
@@ -65,7 +71,7 @@ describe("CorrectionRequest", () => {
   it("infers the request type from the schema", () => {
     expectTypeOf<CorrectionRequest>().toEqualTypeOf<{
       text: string;
-      level?: JlptLevel | undefined;
+      level?: Level | undefined;
     }>();
   });
 });

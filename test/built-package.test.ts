@@ -15,8 +15,8 @@ describe("built package", () => {
         "CorrectionResponse",
         "Edit",
         "ErrorType",
-        "JlptLevel",
         "LanguageCode",
+        "Level",
         "LimitsResponse",
       ].sort(),
     );
@@ -37,7 +37,7 @@ describe("built package", () => {
       "CorrectionRequest",
       "CorrectionResponse",
       "Edit",
-      "JlptLevel",
+      "Level",
     ]) {
       expect(declarations).toMatch(new RegExp(`type ${name}\\b`));
     }
