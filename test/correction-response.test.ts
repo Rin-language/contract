@@ -7,7 +7,7 @@ const validEdit = {
   end: 3,
   replacement: "私は",
   errorType: "particles",
-  jlptLevel: "N5",
+  level: "N5",
   grammarPointId: "ni_particle",
   explanation: "Particle fix.",
 };

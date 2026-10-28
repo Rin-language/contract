@@ -6,12 +6,19 @@ describe("public entry point", () => {
     expect(Object.keys(api).sort()).toEqual(
       [
         "API_VERSION",
+        "ApiError",
+        "ApiErrorCode",
+        "CapabilitiesResponse",
         "CorrectionRequest",
         "CorrectionResponse",
         "Edit",
         "ErrorType",
-        "JlptLevel",
+        "LanguageCapabilities",
+        "LanguageCode",
+        "Level",
         "LimitsResponse",
+        "Page",
+        "UserProfile",
       ].sort(),
     );
   });

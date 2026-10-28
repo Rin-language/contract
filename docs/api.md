@@ -4,13 +4,36 @@ Reference for the schemas exported by `@rin-language/contract`. The schemas are 
 
 The package defines **payload shapes only**. Routes, authentication and rate limiting belong to `core` and `cloud`. `API_VERSION` (`"v1"`) is the version of the API these shapes belong to and is meant to be used as the route prefix.
 
+## Breaking changes in 0.2.0
+
+0.2.0 makes the contract independent of the learned language. These changes are **breaking on purpose** (allowed in 0.x), and 0.1.0 stays published unchanged.
+
+| Before (0.1.0) | Now (0.2.0) |
+|---|---|
+| `ErrorType` was a closed enum of 21 values | `ErrorType` is a non-blank string. The valid ids come from the language profile in the `core` configuration and are published by `CapabilitiesResponse`. |
+| `JlptLevel` enum and `Edit.jlptLevel` | `Level` (non-blank string) and `Edit.level`. The scale comes from the language: `N5` to `N1`, `A1` to `C2`, and so on. |
+| `CorrectionRequest.level` was a `JlptLevel` | Same key, now a `Level`. |
+| A request had no language | `CorrectionRequest.language`, optional. |
+
+New schemas: `LanguageCode`, `CapabilitiesResponse` (and `LanguageCapabilities`), `Page`, `ApiError` (and `ApiErrorCode`), `UserProfile`.
+
+Migrating: rename `jlptLevel` to `level`, drop the `JlptLevel` import (use `Level`), and stop switching exhaustively on `ErrorType`: it is a free string now, so keep a default branch.
+
 ## Conventions
 
 - **Strict objects.** Unknown keys are rejected, in requests and in responses.
-- **Keys are camelCase.** Enum values are lowercase `snake_case`, except JLPT levels (`N5` to `N1`).
+- **Keys are camelCase.** Enum values and ids (error types) are lowercase `snake_case`. Levels are written in the language's own scale (`N5`, `B2`, ...).
+- **Language-neutral.** Nothing that depends on the learned language is frozen here: error types, level scales, grammar and prompts live in the language profile of the `core` configuration. The schemas check shape only, and `GET /v1/capabilities` tells a client which values exist.
+- **Language codes** are two-letter lowercase ISO 639-1 codes (`ja`, `zh`, `fr`), see `LanguageCode`.
 - **Positions.** `start` and `end` are UTF-16 code units, the indices `String.prototype.slice` uses, counted from the beginning of the submitted `text`. `end` is exclusive.
 - **No size limits here.** The schemas check shape, not size. Limits come from the server configuration and are published through `LimitsResponse`. Enforce them before spending any model call.
 - **Untrusted input.** Validate every request body and every model output with these schemas at the boundary, before using it.
+
+## LanguageCode
+
+A string of exactly two lowercase ASCII letters: `ja`, `zh`, `fr`, `ko`, `en`. No region or script suffix (`zh-CN` and `zh-Hans` are rejected), no uppercase.
+
+Only the **format** is checked, not membership in the ISO 639-1 list: which languages exist is the decision of the server configuration. A well-formed code the server has no profile for is refused by the server with the `unsupported_language` error code. Format and rationale: `core/docs/language-data.md`.
 
 ## CorrectionRequest
 
@@ -19,10 +42,15 @@ What a client sends to have a text corrected.
 | Field | Type | Required | Rules |
 |---|---|---|---|
 | `text` | string | yes | Not blank: at least one character that is not whitespace after `trim()`. The text is never trimmed or altered. |
-| `level` | `JlptLevel` | no | `"N5"`, `"N4"`, `"N3"`, `"N2"` or `"N1"`. Omit the key to let the server decide. `null` is rejected. |
+| `language` | `LanguageCode` | no | Language of the text. When omitted, the server uses the `targetLanguage` of the user profile. `null` is rejected. |
+| `level` | `Level` | no | The learner's level, in the scale of the language (`"N4"`, `"B1"`). Omit the key to let the server decide. `null` is rejected. |
 
 ```json
-{ "text": "学校で行きます", "level": "N5" }
+{ "text": "学校で行きます", "language": "ja", "level": "N5" }
+```
+
+```json
+{ "text": "Je suis allé à l'école hier soir.", "language": "fr", "level": "B1" }
 ```
 
 ## CorrectionResponse
@@ -43,9 +71,9 @@ One correction of a span of the submitted text.
 | `start` | integer | yes | Non-negative. First UTF-16 index of the faulty span. |
 | `end` | integer | yes | Non-negative, and not less than `start`. Exclusive. `start === end` is an insertion. |
 | `replacement` | string | yes | Text that replaces the span. An empty string is a deletion. |
-| `errorType` | `ErrorType` | yes | One of the categories listed below. |
-| `jlptLevel` | `JlptLevel` | yes | Always set. The catalog level when a grammar point matched, the model's estimate otherwise. |
-| `grammarPointId` | string or `null` | yes | Id of the matching catalog grammar point, or `null` when the catalog has no match. The key itself is required. An empty string is rejected. |
+| `errorType` | `ErrorType` | yes | An error type id of the request's language (see `ErrorType`). |
+| `level` | `Level` | yes | Always set. The grammar point's level when one matched, the model's estimate otherwise. Same scale as the language. |
+| `grammarPointId` | string or `null` | yes | Id of the matching grammar point of the language pack, or `null` when there is no match. The key itself is required. An empty string is rejected. |
 | `explanation` | string | yes | Not blank: at least one character that is not whitespace after `trim()`. Why the span is wrong. |
 
 ### Ordering rule
@@ -70,7 +98,7 @@ For the request above, `"学校で行きます"`:
       "end": 3,
       "replacement": "学校に",
       "errorType": "particles",
-      "jlptLevel": "N5",
+      "level": "N5",
       "grammarPointId": "ni_particle",
       "explanation": "Utilisation de la mauvaise particule de destination."
     }
@@ -81,39 +109,117 @@ For the request above, `"学校で行きます"`:
 
 ## ErrorType
 
-A closed enum. The first twelve come from the grammar catalog, the next eight cover error kinds the catalog does not, and `other` is the catch-all.
-
-| Value | Covers |
-|---|---|
-| `particles` | Basic, compound and emphatic particles |
-| `conjunctions_affixes` | Connectors between sentences, prefixes and suffixes |
-| `verb_conjugation_compounds` | Verb forms (passive, causative, volitional) and compound verbs |
-| `giving_receiving` | Giving and receiving expressions (てあげる, てくれる, てもらう…) |
-| `keigo_politeness` | Politeness, honorific and humble language, register and formality |
-| `conditionals` | Conditions and hypotheses (ば, たら, なら, と…) |
-| `obligation_permission_prohibition` | What must, may or must not be done |
-| `desire_intent_plans` | Wishes, decisions, intentions and plans |
-| `conjecture_judgment_appearance` | Probability, impressions, hearsay and deductions |
-| `comparison_degree_limitation` | Comparison, degree and restriction |
-| `time_situation_aspect` | Timing, stages, progression, simultaneity and tense or aspect mismatches |
-| `reason_cause_concession` | Cause, reason, opposition and concession |
-| `orthography` | Wrong kanji, homophone confusion, okurigana, look-alike kana, long vowels, geminate consonants |
-| `adjective_conjugation` | Conjugation of い and な adjectives |
-| `word_order` | Order of the elements of a sentence |
-| `counters` | Wrong counter word |
-| `transitivity` | Transitive and intransitive verb confusion |
-| `vocabulary_word_choice` | Unnatural collocation, literal translation, false friends |
-| `style_and_discourse` | Pronoun overuse, redundant repetition, abrupt sentence endings |
-| `punctuation` | Punctuation |
-| `other` | Catch-all for an error that fits no other category, and the natural default (see below) |
+A non-blank string: the id of an error type of the learned language, for example `particles` or `keigo_politeness` for Japanese, `agreement` for French. The contract does not list them. Each language profile in the `core` configuration owns its list (Japanese: `core/data/error-types/ja.json`), and `CapabilitiesResponse` publishes it to the clients.
 
 ### A default value must always be handled
 
-The list will grow: each new category ships in a new minor version of the contract. Nothing may break when a value is not one the code knows, so both sides handle a default.
+A self-hoster can add error types, and a language can gain some at any time, so nothing may break on an id the code does not know.
 
-- **Server.** A response must never contain a value outside `ErrorType`, whatever the model or the catalog produced. The server maps any category it cannot match to a configured default category, `other` unless the deployment chooses another, and never drops the whole correction because of it. The default is a server setting, validated at startup against `ErrorType`.
-- **Client.** Every place that depends on `errorType` (underline colour, label, icon, grouping) needs a default branch with a neutral rendering. Do not write an exhaustive `switch` without one.
-- **Version skew.** The schema is closed, so a client validating with an older version of the contract rejects a response that uses a newer category. Keep the contract version up to date, and treat that failure as "client needs an update" rather than as a corrupt response.
+- **Server.** A response must never contain an id outside the language's list, whatever the model produced. The server replaces it with the `default` of that language (`other` unless configured otherwise) and never drops the whole correction because of it.
+- **Client.** Every place that depends on `errorType` (underline colour, label, icon, grouping) needs a default branch with a neutral rendering. Never write an exhaustive `switch` without one. Labels are looked up by id in the client translations, with a fallback for an id without a label.
+
+## Level
+
+A non-blank string: a level in the scale of the learned language, for example `N5` to `N1` for Japanese or `A1` to `C2` (CEFR) for other languages. The scale and its order come from the language profile and are published by `CapabilitiesResponse`. It is used by `Edit.level`, `CorrectionRequest.level` and `UserProfile.declaredLevel`. The contract does not check that a level belongs to the language's scale: `core` does.
+
+## CapabilitiesResponse
+
+Body of `GET /v1/capabilities`: what the server can do, so a client shows labels and pickers without hardcoding anything.
+
+| Field | Type | Rules |
+|---|---|---|
+| `languages` | `LanguageCapabilities[]` | At least one entry, and no two entries with the same `code`. |
+
+`LanguageCapabilities`:
+
+| Field | Type | Rules |
+|---|---|---|
+| `code` | `LanguageCode` | The language. |
+| `errorTypes` | `ErrorType[]` | At least one, no duplicates. The ids the server can return in `Edit.errorType` for this language. |
+| `levels` | `Level[]` | At least one, no duplicates. **Ordered from the lowest level to the highest**: the order is meaningful. |
+
+Only ids are published. Display labels are translated by the client, by id.
+
+```json
+{
+  "languages": [
+    {
+      "code": "ja",
+      "errorTypes": ["particles", "keigo_politeness", "other"],
+      "levels": ["N5", "N4", "N3", "N2", "N1"]
+    },
+    {
+      "code": "fr",
+      "errorTypes": ["agreement", "verb_tense", "other"],
+      "levels": ["A1", "A2", "B1", "B2", "C1", "C2"]
+    }
+  ]
+}
+```
+
+## Page
+
+`Page(itemSchema)` builds the schema of a paginated response, and `Page<Item>` is its type.
+
+| Field | Type | Rules |
+|---|---|---|
+| `items` | `Item[]` | May be empty. |
+| `nextCursor` | string or `null` | Opaque, non-empty cursor to send to get the next page. `null` marks the last page. The key is required. |
+
+There is no `total`: it is costly to compute and unstable while items change.
+
+```json
+{ "items": [{ "id": "a1" }, { "id": "a2" }], "nextCursor": "eyJhZnRlciI6ImEyIn0" }
+```
+
+## ApiError
+
+Body of an error response.
+
+| Field | Type | Rules |
+|---|---|---|
+| `error.code` | `ApiErrorCode` | One of the codes below. |
+| `error.message` | string | Not blank. Safe to show to the user: internal details go to the server logs only. |
+
+| Code | Meaning |
+|---|---|
+| `invalid_request` | The body or a parameter does not match its schema. |
+| `unauthorized` | Not signed in, or the credentials are not valid. |
+| `forbidden` | Signed in, but not allowed to do this. |
+| `not_found` | The resource does not exist (or is not yours). |
+| `payload_too_large` | An input exceeds a server limit (see `LimitsResponse`). |
+| `rate_limited` | Too many requests in a short time. |
+| `quota_exceeded` | The usage quota of the plan is used up. |
+| `unsupported_language` | A well-formed `LanguageCode` the server has no profile for. |
+| `ai_unavailable` | The AI provider could not be reached or refused the call. |
+| `ai_output_invalid` | The model's output was rejected at the boundary. |
+| `internal_error` | Anything else. |
+
+The list is closed, so a client on an older contract version rejects a code added later: treat that as "client needs an update", and keep a generic fallback for an unexpected response.
+
+```json
+{ "error": { "code": "unsupported_language", "message": "This language is not available on this server." } }
+```
+
+## UserProfile
+
+| Field | Type | Required | Rules |
+|---|---|---|---|
+| `displayName` | string | yes | Not blank. Free text. |
+| `targetLanguage` | `LanguageCode` | no | The language being learned. Defaults to `"ja"` when omitted (so a parsed profile always has it). |
+| `uiLanguage` | `LanguageCode` | yes | Language of the interface. |
+| `timezone` | string | yes | Not blank. Whether it is a valid IANA name (`Asia/Bangkok`) is checked by the server, which owns the runtime. |
+| `declaredLevel` | `Level` | no | The level the user says they have, in the scale of `targetLanguage`. Absent until declared. `null` is rejected. |
+
+```json
+{
+  "displayName": "Robis",
+  "targetLanguage": "ja",
+  "uiLanguage": "fr",
+  "timezone": "Asia/Bangkok",
+  "declaredLevel": "N4"
+}
+```
 
 ## LimitsResponse
 
@@ -137,5 +243,7 @@ These checks need information the contract does not have, so they live in `core`
 
 - Sizes: text length, number of edits, explanation length, `replacement` length.
 - That `start` and `end` lie within the submitted text, and that the faulty span is really present in it.
-- That `grammarPointId` exists in the catalog and belongs to the category in `errorType`.
+- That `errorType`, `level` and `declaredLevel` belong to the profile of the language, and that `language` is one the server has a profile for.
+- That `grammarPointId` exists in the language's grammar pack and belongs to the type in `errorType`.
+- That `timezone` is a valid IANA name.
 - That `score` is consistent with the edits.

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { ErrorType } from "./error-type.js";
-import { JlptLevel } from "./jlpt-level.js";
+import { Level } from "./level.js";
 
 export const Edit = z
   .strictObject({
@@ -9,7 +9,7 @@ export const Edit = z
     end: z.number().int().nonnegative(),
     replacement: z.string(),
     errorType: ErrorType,
-    jlptLevel: JlptLevel,
+    level: Level,
     // Null when the catalog has no matching grammar point.
     grammarPointId: z.string().min(1).nullable(),
     explanation: z
