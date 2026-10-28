@@ -75,13 +75,44 @@ describe("ApiError", () => {
 
   it("rejects an unknown key inside the error", () => {
     expect(
-      ApiError.safeParse({ error: { ...valid.error, details: {} } }).success,
+      ApiError.safeParse({ error: { ...valid.error, stack: "at x" } }).success,
     ).toBe(false);
+  });
+
+  it("accepts optional details inside the error", () => {
+    expect(
+      ApiError.safeParse({
+        error: { ...valid.error, details: { field: "text", limit: 2000 } },
+      }).success,
+    ).toBe(true);
+  });
+
+  it("accepts empty details", () => {
+    expect(
+      ApiError.safeParse({ error: { ...valid.error, details: {} } }).success,
+    ).toBe(true);
+  });
+
+  it.each([null, "text too long", ["text"], 42])(
+    "rejects the details %j, which are not an object",
+    (details) => {
+      expect(
+        ApiError.safeParse({ error: { ...valid.error, details } }).success,
+      ).toBe(false);
+    },
+  );
+
+  it("rejects details beside the error", () => {
+    expect(ApiError.safeParse({ ...valid, details: {} }).success).toBe(false);
   });
 
   it("infers the error type from the schema", () => {
     expectTypeOf<ApiError>().toEqualTypeOf<{
-      error: { code: ApiErrorCode; message: string };
+      error: {
+        code: ApiErrorCode;
+        message: string;
+        details?: Record<string, unknown> | undefined;
+      };
     }>();
   });
 });
