@@ -18,6 +18,7 @@ describe("public entry point", () => {
         "Level",
         "LimitsResponse",
         "Page",
+        "UserProfile",
       ].sort(),
     );
   });

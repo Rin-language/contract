@@ -23,6 +23,7 @@ describe("built package", () => {
         "Level",
         "LimitsResponse",
         "Page",
+        "UserProfile",
       ].sort(),
     );
   });
@@ -39,10 +40,15 @@ describe("built package", () => {
     const declarations = readFileSync(typesUrl, "utf8");
 
     for (const name of [
+      "ApiError",
+      "ApiErrorCode",
+      "CapabilitiesResponse",
       "CorrectionRequest",
       "CorrectionResponse",
       "Edit",
       "Level",
+      "Page",
+      "UserProfile",
     ]) {
       expect(declarations).toMatch(new RegExp(`type ${name}\\b`));
     }
