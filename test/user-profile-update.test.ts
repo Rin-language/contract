@@ -4,7 +4,6 @@ import { UserProfileUpdate } from "../src/user-profile-update.js";
 describe("UserProfileUpdate", () => {
   it.each([
     ["displayName", "Rob"],
-    ["targetLanguage", "zh"],
     ["uiLanguage", "en"],
     ["timezone", "Europe/Paris"],
     ["declaredLevel", "N3"],
@@ -17,6 +16,29 @@ describe("UserProfileUpdate", () => {
       UserProfileUpdate.safeParse({ targetLanguage: "fr", declaredLevel: "B1" })
         .success,
     ).toBe(true);
+  });
+
+  it("accepts a change of target language with the level in the new scale", () => {
+    expect(
+      UserProfileUpdate.safeParse({
+        targetLanguage: "zh",
+        declaredLevel: "HSK 1",
+      }).success,
+    ).toBe(true);
+  });
+
+  it("rejects a change of target language without a level", () => {
+    expect(UserProfileUpdate.safeParse({ targetLanguage: "fr" }).success).toBe(
+      false,
+    );
+  });
+
+  it("points the missing level error at declaredLevel", () => {
+    const result = UserProfileUpdate.safeParse({ targetLanguage: "fr" });
+
+    expect(result.error?.issues.map((issue) => issue.path)).toContainEqual([
+      "declaredLevel",
+    ]);
   });
 
   it("rejects an update with no change", () => {
@@ -61,7 +83,10 @@ describe("UserProfileUpdate", () => {
   );
 
   it.each(["targetLanguage", "uiLanguage"])("rejects a malformed %s", (key) => {
-    expect(UserProfileUpdate.safeParse({ [key]: "ja-JP" }).success).toBe(false);
+    expect(
+      UserProfileUpdate.safeParse({ [key]: "ja-JP", declaredLevel: "N5" })
+        .success,
+    ).toBe(false);
   });
 
   it.each([

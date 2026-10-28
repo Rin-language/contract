@@ -17,5 +17,15 @@ export const UserProfileUpdate = z
   .refine(
     (update) => Object.keys(update).length > 0,
     "an update must change at least one field",
+  )
+  // A level only makes sense in the scale of its language, so a new target
+  // language comes with its level (the lowest of the scale when unknown).
+  .refine(
+    (update) =>
+      update.targetLanguage === undefined || update.declaredLevel !== undefined,
+    {
+      message: "a change of target language must come with its declared level",
+      path: ["declaredLevel"],
+    },
   );
 export type UserProfileUpdate = z.infer<typeof UserProfileUpdate>;
