@@ -11,19 +11,26 @@ describe("built package", () => {
     expect(Object.keys(api).sort()).toEqual(
       [
         "API_VERSION",
+        "ActivityKind",
         "ApiError",
         "ApiErrorCode",
         "CapabilitiesResponse",
         "CorrectionRequest",
         "CorrectionResponse",
+        "DayKey",
         "Edit",
         "ErrorType",
+        "HealthResponse",
+        "Id",
+        "IsoDateTime",
         "LanguageCapabilities",
         "LanguageCode",
         "Level",
         "LimitsResponse",
         "Page",
+        "SkillRating",
         "UserProfile",
+        "UserProfileUpdate",
       ].sort(),
     );
   });
@@ -40,15 +47,22 @@ describe("built package", () => {
     const declarations = readFileSync(typesUrl, "utf8");
 
     for (const name of [
+      "ActivityKind",
       "ApiError",
       "ApiErrorCode",
       "CapabilitiesResponse",
       "CorrectionRequest",
       "CorrectionResponse",
+      "DayKey",
       "Edit",
+      "HealthResponse",
+      "Id",
+      "IsoDateTime",
       "Level",
       "Page",
+      "SkillRating",
       "UserProfile",
+      "UserProfileUpdate",
     ]) {
       expect(declarations).toMatch(new RegExp(`type ${name}\\b`));
     }

@@ -21,6 +21,9 @@ export const ApiError = z.strictObject({
     code: ApiErrorCode,
     // Safe to show to the user: internal details go to the server logs only.
     message: NonBlankString,
+    // Machine-readable context (the field, the limit). Never user content nor
+    // internal details.
+    details: z.record(z.string(), z.unknown()).optional(),
   }),
 });
 export type ApiError = z.infer<typeof ApiError>;

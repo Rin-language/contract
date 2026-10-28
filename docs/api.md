@@ -19,6 +19,18 @@ New schemas: `LanguageCode`, `CapabilitiesResponse` (and `LanguageCapabilities`)
 
 Migrating: rename `jlptLevel` to `level`, drop the `JlptLevel` import (use `Level`), and stop switching exhaustively on `ErrorType`: it is a free string now, so keep a default branch.
 
+## Additions in 0.2.1
+
+Additive, except for two fields that become **required**: `LanguageCapabilities.skills` and `UserProfile.declaredLevel`. No server returns capabilities or profiles yet, so no existing response breaks, but a server built against 0.2.0 must send both.
+
+- Common primitives: `Id`, `IsoDateTime`, `DayKey`, `ActivityKind`.
+- `SkillRating`, and `UserProfile.skillRatings` (read-only, defaults to `[]`).
+- `UserProfileUpdate`: what a client sends to change its profile.
+- `UserProfile.declaredLevel` is required: the server starts it at the lowest level of the language.
+- `LanguageCapabilities.skills`.
+- `HealthResponse`.
+- `ApiError`: optional `error.details`.
+
 ## Conventions
 
 - **Strict objects.** Unknown keys are rejected, in requests and in responses.
@@ -34,6 +46,21 @@ Migrating: rename `jlptLevel` to `level`, drop the `JlptLevel` import (use `Leve
 A string of exactly two lowercase ASCII letters: `ja`, `zh`, `fr`, `ko`, `en`. No region or script suffix (`zh-CN` and `zh-Hans` are rejected), no uppercase.
 
 Only the **format** is checked, not membership in the ISO 639-1 list: which languages exist is the decision of the server configuration. A well-formed code the server has no profile for is refused by the server with the `unsupported_language` error code. Format and rationale: `core/docs/language-data.md`.
+
+## Common primitives
+
+Building blocks reused by the other schemas. Each one checks a format only.
+
+| Schema | Type | Rules |
+|---|---|---|
+| `Id` | string | Not blank. Opaque: a client stores it and sends it back, never parses it or builds one. |
+| `IsoDateTime` | string | ISO 8601 date-time **with** `Z` or a numeric offset (`2026-10-28T09:32:00Z`, `2026-10-28T16:32:00+07:00`). Fractional seconds are allowed. A date alone, a time without a zone and a day that does not exist (`2026-02-30T10:00:00Z`) are rejected. |
+| `DayKey` | string | `YYYY-MM-DD`, zero-padded, and the day must exist: `2026-02-30`, `2026-02-29` (common year), `2026-13-01` and `2026-1-5` are rejected, `2028-02-29` is accepted. |
+| `ActivityKind` | string | Not blank. An open list, never a closed enum: each slice adds its kind (`writing`, `reading`, ...). Keep a default branch for an unknown kind, as for `ErrorType`. |
+
+### DayKey is computed by the server
+
+A `DayKey` is the calendar day an activity counts for, in the user's `timezone`. Only the server computes it, from the instant and the profile's time zone, so streaks and goals never depend on a client clock. A client displays it and may send one back to query a day, but the contract only checks the format: the server decides which day an activity belongs to.
 
 ## CorrectionRequest
 
@@ -137,6 +164,7 @@ Body of `GET /v1/capabilities`: what the server can do, so a client shows labels
 | `code` | `LanguageCode` | The language. |
 | `errorTypes` | `ErrorType[]` | At least one, no duplicates. The ids the server can return in `Edit.errorType` for this language. |
 | `levels` | `Level[]` | At least one, no duplicates. **Ordered from the lowest level to the highest**: the order is meaningful. |
+| `skills` | string[] | At least one, no duplicates, none blank. The skills rated for this language (`reading`, `listening`, ...): the valid values of `SkillRating.skill`. **Required since 0.2.1.** |
 
 Only ids are published. Display labels are translated by the client, by id.
 
@@ -146,12 +174,14 @@ Only ids are published. Display labels are translated by the client, by id.
     {
       "code": "ja",
       "errorTypes": ["particles", "keigo_politeness", "other"],
-      "levels": ["N5", "N4", "N3", "N2", "N1"]
+      "levels": ["N5", "N4", "N3", "N2", "N1"],
+      "skills": ["reading", "listening", "writing", "speaking"]
     },
     {
       "code": "fr",
       "errorTypes": ["agreement", "verb_tense", "other"],
-      "levels": ["A1", "A2", "B1", "B2", "C1", "C2"]
+      "levels": ["A1", "A2", "B1", "B2", "C1", "C2"],
+      "skills": ["reading", "writing"]
     }
   ]
 }
@@ -180,6 +210,9 @@ Body of an error response.
 |---|---|---|
 | `error.code` | `ApiErrorCode` | One of the codes below. |
 | `error.message` | string | Not blank. Safe to show to the user: internal details go to the server logs only. |
+| `error.details` | object | Optional. A record of string keys to any JSON value, for context a client can act on: the field at fault, the limit that was exceeded. |
+
+`details` **never contains user content** (the submitted text, an epub excerpt, a model output) **nor internal details** (stack traces, SQL, provider names, file paths). It holds what the client already sent the key of, or a public limit. Anything else goes to the server logs, and user content goes nowhere.
 
 | Code | Meaning |
 |---|---|
@@ -201,6 +234,10 @@ The list is closed, so a client on an older contract version rejects a code adde
 { "error": { "code": "unsupported_language", "message": "This language is not available on this server." } }
 ```
 
+```json
+{ "error": { "code": "payload_too_large", "message": "The text is too long.", "details": { "field": "text", "limit": 2000 } } }
+```
+
 ## UserProfile
 
 | Field | Type | Required | Rules |
@@ -209,7 +246,10 @@ The list is closed, so a client on an older contract version rejects a code adde
 | `targetLanguage` | `LanguageCode` | no | The language being learned. Defaults to `"ja"` when omitted (so a parsed profile always has it). |
 | `uiLanguage` | `LanguageCode` | yes | Language of the interface. |
 | `timezone` | string | yes | Not blank. Whether it is a valid IANA name (`Asia/Bangkok`) is checked by the server, which owns the runtime. |
-| `declaredLevel` | `Level` | no | The level the user says they have, in the scale of `targetLanguage`. Absent until declared. `null` is rejected. |
+| `declaredLevel` | `Level` | yes | The level the user says they have, in the scale of `targetLanguage`. **Always set:** until the user declares one, the server sets the lowest level of the language (the first item of its `levels` in `CapabilitiesResponse`), and the user changes it during onboarding. `null` is rejected. Required since 0.2.1. |
+| `skillRatings` | `SkillRating[]` | no | **Read-only.** The user's ratings, computed by the server. Defaults to `[]` (so a parsed profile always has it). A client never sends it: changes go through `UserProfileUpdate`, which has no such field. |
+
+`UserProfile` is what the server returns. Never validate a client's request with it: its `skillRatings` default would turn a missing field into `[]` and wipe the stored ratings, and its `targetLanguage` default would reset the language to `"ja"`.
 
 ```json
 {
@@ -217,8 +257,59 @@ The list is closed, so a client on an older contract version rejects a code adde
   "targetLanguage": "ja",
   "uiLanguage": "fr",
   "timezone": "Asia/Bangkok",
-  "declaredLevel": "N4"
+  "declaredLevel": "N4",
+  "skillRatings": [
+    { "language": "ja", "skill": "reading", "rating": 1320, "votes": 8 }
+  ]
 }
+```
+
+### SkillRating
+
+A rating of the user for one skill of one language. Computed by the server only.
+
+| Field | Type | Rules |
+|---|---|---|
+| `language` | `LanguageCode` | The rated language. |
+| `skill` | string | Not blank. One of the `skills` of that language in `CapabilitiesResponse`. |
+| `rating` | number | Finite (`Infinity` and `NaN` are rejected). Its scale belongs to the server. |
+| `votes` | integer | Zero or more. How many results the rating is based on. |
+
+## UserProfileUpdate
+
+What a client sends to change its profile. It carries **only the fields that change**: the server applies them to the stored profile and leaves every other field as it is.
+
+| Field | Type | Required | Rules |
+|---|---|---|---|
+| `displayName` | string | no | Not blank. |
+| `targetLanguage` | `LanguageCode` | no | No default: an absent key leaves the target language unchanged. **When present, `declaredLevel` is required.** |
+| `uiLanguage` | `LanguageCode` | no | |
+| `timezone` | string | no | Not blank. The IANA name is checked by the server. |
+| `declaredLevel` | `Level` | with `targetLanguage` | In the scale of the target language after the update. Required when `targetLanguage` is sent. |
+
+- At least one field: an empty update `{}` is rejected.
+- `null` is rejected everywhere. A field cannot be cleared, only changed.
+- **A new target language comes with its level.** A level only makes sense in the scale of its language: changing `targetLanguage` alone would keep, say, `N4` next to French. Such an update is rejected, with the issue on `declaredLevel`. When the user does not know their level yet, the client sends the **lowest level** of the new language, the first item of its `levels` in `CapabilitiesResponse`; the user changes it during onboarding.
+- **No `skillRatings`.** The object is strict, so a client that sends ratings (even `[]`) is rejected with `invalid_request`. Only the server writes ratings.
+
+```json
+{ "targetLanguage": "fr", "declaredLevel": "A1" }
+```
+
+```json
+{ "timezone": "Asia/Tokyo" }
+```
+
+## HealthResponse
+
+Body of `GET /health`. It says the server is up, and nothing else: no version, no dependency status.
+
+| Field | Type | Rules |
+|---|---|---|
+| `status` | `"ok"` | The only accepted value. |
+
+```json
+{ "status": "ok" }
 ```
 
 ## LimitsResponse
@@ -246,4 +337,7 @@ These checks need information the contract does not have, so they live in `core`
 - That `errorType`, `level` and `declaredLevel` belong to the profile of the language, and that `language` is one the server has a profile for.
 - That `grammarPointId` exists in the language's grammar pack and belongs to the type in `errorType`.
 - That `timezone` is a valid IANA name.
+- That `declaredLevel` in a `UserProfileUpdate` belongs to the scale of the resulting target language (the stored one when the update does not change it).
+- That `SkillRating.skill` is one of the language's `skills`, and that an `ActivityKind` is one the server knows.
+- Which day a `DayKey` should be: the server computes it in the user's time zone.
 - That `score` is consistent with the edits.

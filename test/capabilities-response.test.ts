@@ -8,11 +8,13 @@ const japanese = {
   code: "ja",
   errorTypes: ["particles", "other"],
   levels: ["N5", "N4", "N3", "N2", "N1"],
+  skills: ["reading", "listening", "writing", "speaking"],
 };
 const french = {
   code: "fr",
   errorTypes: ["agreement", "other"],
   levels: ["A1", "A2", "B1", "B2", "C1", "C2"],
+  skills: ["reading", "writing"],
 };
 
 describe("CapabilitiesResponse", () => {
@@ -111,11 +113,35 @@ describe("LanguageCapabilities", () => {
     ).toBe(false);
   });
 
-  it.each(["code", "errorTypes", "levels"])("rejects a missing %s", (key) => {
-    const { [key]: _removed, ...rest } = japanese as Record<string, unknown>;
-
-    expect(LanguageCapabilities.safeParse(rest).success).toBe(false);
+  it("rejects an empty list of skills", () => {
+    expect(
+      LanguageCapabilities.safeParse({ ...japanese, skills: [] }).success,
+    ).toBe(false);
   });
+
+  it("rejects a duplicated skill", () => {
+    expect(
+      LanguageCapabilities.safeParse({
+        ...japanese,
+        skills: ["reading", "reading"],
+      }).success,
+    ).toBe(false);
+  });
+
+  it("rejects a blank skill", () => {
+    expect(
+      LanguageCapabilities.safeParse({ ...japanese, skills: ["  "] }).success,
+    ).toBe(false);
+  });
+
+  it.each(["code", "errorTypes", "levels", "skills"])(
+    "rejects a missing %s",
+    (key) => {
+      const { [key]: _removed, ...rest } = japanese as Record<string, unknown>;
+
+      expect(LanguageCapabilities.safeParse(rest).success).toBe(false);
+    },
+  );
 
   it("rejects an unknown key", () => {
     expect(

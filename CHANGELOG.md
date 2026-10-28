@@ -1,5 +1,22 @@
 # @rin-language/contract
 
+## 0.2.1
+
+### Patch Changes
+
+- 0910aa9: Complete the 0a+ slice with additive schemas.
+  
+  - Common primitives: `Id` (opaque non-blank string), `IsoDateTime` (ISO 8601 with `Z` or an offset), `DayKey` (`YYYY-MM-DD`, a day that exists, computed by the server) and `ActivityKind` (open non-blank string).
+  - `SkillRating` `{ language, skill, rating, votes }`, and `UserProfile.skillRatings`: read-only, computed by the server, defaults to `[]`.
+  - `HealthResponse` `{ status: "ok" }` for `GET /health`.
+  - `ApiError`: optional `error.details`, a record that never holds user content nor internal details. The envelope is unchanged.
+  
+  **Required field:** `LanguageCapabilities.skills` (non-empty, unique) is required in `CapabilitiesResponse`. No server implements `GET /v1/capabilities` yet, so no existing response breaks, but a server must publish `skills` for every language.
+
+- 5aa81b2: Add `UserProfileUpdate`, what a client sends to change its profile: only the changed fields (all optional, at least one), no default, and no `skillRatings`, so ratings sent by a client are rejected at the boundary. A change of `targetLanguage` must come with its `declaredLevel` (the lowest level of the new language when unknown).
+
+- ec85123: **Required field:** `UserProfile.declaredLevel` is now required. Until the user declares a level, the server sets the lowest level of the target language (the first of its `levels` in `CapabilitiesResponse`); the user changes it during onboarding. No server returns profiles yet, so no existing response breaks.
+
 ## 0.2.0
 
 ### Minor Changes

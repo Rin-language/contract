@@ -1,4 +1,5 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
+import type { SkillRating } from "../src/skill-rating.js";
 import { UserProfile } from "../src/user-profile.js";
 
 const validProfile = {
@@ -14,10 +15,10 @@ describe("UserProfile", () => {
     expect(UserProfile.safeParse(validProfile).success).toBe(true);
   });
 
-  it("accepts a profile without a declared level", () => {
+  it("rejects a profile without a declared level", () => {
     const { declaredLevel: _declaredLevel, ...withoutLevel } = validProfile;
 
-    expect(UserProfile.safeParse(withoutLevel).success).toBe(true);
+    expect(UserProfile.safeParse(withoutLevel).success).toBe(false);
   });
 
   it("accepts a declared level from another scale", () => {
@@ -100,6 +101,36 @@ describe("UserProfile", () => {
     ).toBe(false);
   });
 
+  it("defaults the skill ratings to an empty list", () => {
+    expect(UserProfile.parse(validProfile).skillRatings).toEqual([]);
+  });
+
+  it("keeps the skill ratings sent by the server", () => {
+    const skillRatings = [
+      { language: "ja", skill: "reading", rating: 1320, votes: 8 },
+      { language: "ja", skill: "listening", rating: 1180, votes: 0 },
+    ];
+
+    expect(
+      UserProfile.parse({ ...validProfile, skillRatings }).skillRatings,
+    ).toEqual(skillRatings);
+  });
+
+  it("rejects a malformed skill rating", () => {
+    expect(
+      UserProfile.safeParse({
+        ...validProfile,
+        skillRatings: [{ language: "ja", skill: "reading", rating: 1300 }],
+      }).success,
+    ).toBe(false);
+  });
+
+  it("rejects a null list of skill ratings", () => {
+    expect(
+      UserProfile.safeParse({ ...validProfile, skillRatings: null }).success,
+    ).toBe(false);
+  });
+
   it("rejects an unknown key", () => {
     expect(
       UserProfile.safeParse({ ...validProfile, email: "a@b.c" }).success,
@@ -112,7 +143,8 @@ describe("UserProfile", () => {
       targetLanguage: string;
       uiLanguage: string;
       timezone: string;
-      declaredLevel?: string | undefined;
+      declaredLevel: string;
+      skillRatings: SkillRating[];
     }>();
   });
 });
