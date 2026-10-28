@@ -2,7 +2,7 @@
 
 Shared [Zod](https://zod.dev) schemas and inferred TypeScript types for the Rin API. This package is the single source of truth between the client, the server and any other consumer. It contains schemas only: no business logic, no server or client code.
 
-Current scope, independent of the learned language (Japanese first, others later): text correction (`CorrectionRequest`, `Edit`, `CorrectionResponse`, `ErrorType`, `Level`), `LanguageCode`, the languages a server offers (`CapabilitiesResponse`), the server limits (`LimitsResponse`), pagination (`Page`), API errors (`ApiError`), the user profile (`UserProfile`, with read-only `SkillRating`s), `HealthResponse`, the common primitives (`Id`, `IsoDateTime`, `DayKey`, `ActivityKind`) and `API_VERSION`. Every object schema is strict: unknown keys are rejected.
+Current scope, independent of the learned language (Japanese first, others later): text correction (`CorrectionRequest`, `Edit`, `CorrectionResponse`, `ErrorType`, `Level`), `LanguageCode`, the languages a server offers (`CapabilitiesResponse`), the server limits (`LimitsResponse`), pagination (`Page`), API errors (`ApiError`), the user profile (`UserProfile`, with read-only `SkillRating`s, and `UserProfileUpdate`), `HealthResponse`, the common primitives (`Id`, `IsoDateTime`, `DayKey`, `ActivityKind`) and `API_VERSION`. Every object schema is strict: unknown keys are rejected.
 
 Full field-by-field reference, with examples: [docs/api.md](docs/api.md).
 
@@ -39,7 +39,7 @@ Validate all external input (HTTP bodies, model output) with these schemas at th
 - **Nothing depends on the language here.** `Edit.errorType` and `Edit.level` (and `CorrectionRequest.level`, `UserProfile.declaredLevel`) are non-blank strings: the valid error type ids and the level scale (`N5` to `N1`, `A1` to `C2`) belong to each language's profile in the `core` configuration. A client reads them from `GET /v1/capabilities` (`CapabilitiesResponse`) and keeps a default branch for an id it does not know. `Edit.level` is always set: the grammar point's level when one matched, the model's estimate otherwise. `Edit.grammarPointId` is the matching grammar point, or `null` when there is none; `core` checks it against the language's pack.
 - **Language codes:** two lowercase letters (`ja`, `zh`, `fr`), format only (`LanguageCode`). A request may name its `language`; when omitted, the server uses the user's `targetLanguage`.
 - **Days and instants:** an instant is an `IsoDateTime` with `Z` or an offset. A `DayKey` (`YYYY-MM-DD`) is computed by the server in the user's time zone; the contract only checks that the day exists.
-- **Read-only fields:** `UserProfile.skillRatings` is computed by the server, which ignores it in a request.
+- **Read and write shapes:** `UserProfile` is what the server returns; a client changes its profile with `UserProfileUpdate` (only the changed fields, no `skillRatings`). `UserProfile.skillRatings` is computed by the server only.
 - **Score:** `CorrectionResponse.score` is an integer from 0 to 100.
 - **Size limits are not in the contract.** The server enforces them from its own configuration and exposes them as `LimitsResponse` (`maxTextLength`, `maxEdits`, `maxExplanationLength`). The schemas here only check shape, so a consumer must enforce its server's limits before spending any model call.
 

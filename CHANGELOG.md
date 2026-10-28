@@ -13,6 +13,8 @@
   
   **Required field:** `LanguageCapabilities.skills` (non-empty, unique) is required in `CapabilitiesResponse`. No server implements `GET /v1/capabilities` yet, so no existing response breaks, but a server must publish `skills` for every language.
 
+- 5aa81b2: Add `UserProfileUpdate`, what a client sends to change its profile: only the changed fields (all optional, at least one), no default, and no `skillRatings`, so ratings sent by a client are rejected at the boundary.
+
 ## 0.2.0
 
 ### Minor Changes

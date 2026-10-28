@@ -25,6 +25,7 @@ Additive, except for one field: `LanguageCapabilities.skills` is **required**. N
 
 - Common primitives: `Id`, `IsoDateTime`, `DayKey`, `ActivityKind`.
 - `SkillRating`, and `UserProfile.skillRatings` (read-only, defaults to `[]`).
+- `UserProfileUpdate`: what a client sends to change its profile.
 - `LanguageCapabilities.skills`.
 - `HealthResponse`.
 - `ApiError`: optional `error.details`.
@@ -245,7 +246,9 @@ The list is closed, so a client on an older contract version rejects a code adde
 | `uiLanguage` | `LanguageCode` | yes | Language of the interface. |
 | `timezone` | string | yes | Not blank. Whether it is a valid IANA name (`Asia/Bangkok`) is checked by the server, which owns the runtime. |
 | `declaredLevel` | `Level` | no | The level the user says they have, in the scale of `targetLanguage`. Absent until declared. `null` is rejected. |
-| `skillRatings` | `SkillRating[]` | no | **Read-only.** The user's ratings, computed by the server. Defaults to `[]` (so a parsed profile always has it). The server ignores this field in a request: a client never sets or changes a rating. |
+| `skillRatings` | `SkillRating[]` | no | **Read-only.** The user's ratings, computed by the server. Defaults to `[]` (so a parsed profile always has it). A client never sends it: changes go through `UserProfileUpdate`, which has no such field. |
+
+`UserProfile` is what the server returns. Never validate a client's request with it: its `skillRatings` default would turn a missing field into `[]` and wipe the stored ratings, and its `targetLanguage` default would reset the language to `"ja"`.
 
 ```json
 {
@@ -270,6 +273,26 @@ A rating of the user for one skill of one language. Computed by the server only.
 | `skill` | string | Not blank. One of the `skills` of that language in `CapabilitiesResponse`. |
 | `rating` | number | Finite (`Infinity` and `NaN` are rejected). Its scale belongs to the server. |
 | `votes` | integer | Zero or more. How many results the rating is based on. |
+
+## UserProfileUpdate
+
+What a client sends to change its profile. It carries **only the fields that change**: the server applies them to the stored profile and leaves every other field as it is.
+
+| Field | Type | Required | Rules |
+|---|---|---|---|
+| `displayName` | string | no | Not blank. |
+| `targetLanguage` | `LanguageCode` | no | No default: an absent key leaves the target language unchanged. |
+| `uiLanguage` | `LanguageCode` | no | |
+| `timezone` | string | no | Not blank. The IANA name is checked by the server. |
+| `declaredLevel` | `Level` | no | In the scale of the target language after the update. |
+
+- At least one field: an empty update `{}` is rejected.
+- `null` is rejected everywhere. A field cannot be cleared, only changed.
+- **No `skillRatings`.** The object is strict, so a client that sends ratings (even `[]`) is rejected with `invalid_request`. Only the server writes ratings.
+
+```json
+{ "targetLanguage": "fr", "declaredLevel": "B1" }
+```
 
 ## HealthResponse
 
@@ -308,6 +331,7 @@ These checks need information the contract does not have, so they live in `core`
 - That `errorType`, `level` and `declaredLevel` belong to the profile of the language, and that `language` is one the server has a profile for.
 - That `grammarPointId` exists in the language's grammar pack and belongs to the type in `errorType`.
 - That `timezone` is a valid IANA name.
+- That `declaredLevel` in a `UserProfileUpdate` belongs to the scale of the resulting target language (the stored one when the update does not change it).
 - That `SkillRating.skill` is one of the language's `skills`, and that an `ActivityKind` is one the server knows.
 - Which day a `DayKey` should be: the server computes it in the user's time zone.
 - That `score` is consistent with the edits.
