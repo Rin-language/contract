@@ -13,6 +13,7 @@ describe("public entry point", () => {
         "CorrectionResponse",
         "Edit",
         "ErrorType",
+        "Id",
         "LanguageCapabilities",
         "LanguageCode",
         "Level",
