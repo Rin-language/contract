@@ -27,6 +27,7 @@ describe("built package", () => {
         "Level",
         "LimitsResponse",
         "Page",
+        "SkillRating",
         "UserProfile",
       ].sort(),
     );
@@ -56,6 +57,7 @@ describe("built package", () => {
       "IsoDateTime",
       "Level",
       "Page",
+      "SkillRating",
       "UserProfile",
     ]) {
       expect(declarations).toMatch(new RegExp(`type ${name}\\b`));

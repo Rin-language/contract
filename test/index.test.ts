@@ -22,6 +22,7 @@ describe("public entry point", () => {
         "Level",
         "LimitsResponse",
         "Page",
+        "SkillRating",
         "UserProfile",
       ].sort(),
     );

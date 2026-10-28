@@ -16,4 +16,5 @@ export { LanguageCode } from "./language-code.js";
 export { Level } from "./level.js";
 export { LimitsResponse } from "./limits-response.js";
 export { Page } from "./page.js";
+export { SkillRating } from "./skill-rating.js";
 export { UserProfile } from "./user-profile.js";
