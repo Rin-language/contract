@@ -2,7 +2,7 @@
 
 Shared [Zod](https://zod.dev) schemas and inferred TypeScript types for the Rin API. This package is the single source of truth between the client, the server and any other consumer. It contains schemas only: no business logic, no server or client code.
 
-Current scope: text correction (`JlptLevel`, `CorrectionRequest`, `Edit`, `CorrectionResponse`, `ErrorType`), the server limits (`LimitsResponse`) and `API_VERSION`. Every object schema is strict: unknown keys are rejected.
+Current scope, independent of the learned language (Japanese first, others later): text correction (`CorrectionRequest`, `Edit`, `CorrectionResponse`, `ErrorType`, `Level`), `LanguageCode`, the languages a server offers (`CapabilitiesResponse`), the server limits (`LimitsResponse`), pagination (`Page`), API errors (`ApiError`), the user profile (`UserProfile`) and `API_VERSION`. Every object schema is strict: unknown keys are rejected.
 
 Full field-by-field reference, with examples: [docs/api.md](docs/api.md).
 
@@ -22,7 +22,12 @@ import {
   type CorrectionResponse,
 } from "@rin-language/contract";
 
-const request = CorrectionRequest.parse({ text: "私は学生です", level: "N4" });
+const japanese = CorrectionRequest.parse({
+  text: "私は学生です",
+  language: "ja",
+  level: "N4",
+});
+const french = CorrectionRequest.parse({ text: "Je suis étudiant.", language: "fr", level: "B1" });
 ```
 
 Validate all external input (HTTP bodies, model output) with these schemas at the boundary.
@@ -31,7 +36,8 @@ Validate all external input (HTTP bodies, model output) with these schemas at th
 
 - **Edit positions:** `start` and `end` are UTF-16 code units (the indices `String.prototype.slice` uses) into the submitted text. Edits are sorted by position and never overlap. Checking that they fit the original text depends on that text, so it lives in `core`, not here.
 - **Corrected text:** there is no `correctedText` field. Apply the edits to the original text; the struck-through original of an edit is `text.slice(start, end)`.
-- **Error category and level:** `Edit.errorType` is one of the `ErrorType` categories (for example `particles`, `keigo_politeness`, `orthography`). The list is closed, so adding a category is a new contract release, and a consumer on an older version rejects responses that use it. `Edit.jlptLevel` is always set: the catalog level when a grammar point matched, the model's estimate otherwise. `Edit.grammarPointId` is the matching catalog entry, or `null` when there is none; `core` checks it against the catalog.
+- **Nothing depends on the language here.** `Edit.errorType` and `Edit.level` (and `CorrectionRequest.level`, `UserProfile.declaredLevel`) are non-blank strings: the valid error type ids and the level scale (`N5` to `N1`, `A1` to `C2`) belong to each language's profile in the `core` configuration. A client reads them from `GET /v1/capabilities` (`CapabilitiesResponse`) and keeps a default branch for an id it does not know. `Edit.level` is always set: the grammar point's level when one matched, the model's estimate otherwise. `Edit.grammarPointId` is the matching grammar point, or `null` when there is none; `core` checks it against the language's pack.
+- **Language codes:** two lowercase letters (`ja`, `zh`, `fr`), format only (`LanguageCode`). A request may name its `language`; when omitted, the server uses the user's `targetLanguage`.
 - **Score:** `CorrectionResponse.score` is an integer from 0 to 100.
 - **Size limits are not in the contract.** The server enforces them from its own configuration and exposes them as `LimitsResponse` (`maxTextLength`, `maxEdits`, `maxExplanationLength`). The schemas here only check shape, so a consumer must enforce its server's limits before spending any model call.
 
