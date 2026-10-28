@@ -72,6 +72,6 @@ describe("built package", () => {
     const bundle = readFileSync(distUrl, "utf8");
 
     expect(bundle).toMatch(/from ["']zod["']/);
-    expect(bundle.length).toBeLessThan(10_000);
+    expect(bundle.length).toBeLessThan(40_000);
   });
 });

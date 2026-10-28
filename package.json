@@ -16,7 +16,8 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
-    }
+    },
+    "./json-schema/*": "./dist/json-schema/*"
   },
   "files": [
     "dist"
@@ -25,7 +26,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && node scripts/build-json-schema.mjs",
     "test": "vitest run",
     "lint": "biome check .",
     "format": "biome format --write .",
