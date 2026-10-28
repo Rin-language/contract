@@ -16,6 +16,7 @@ describe("built package", () => {
         "Edit",
         "ErrorType",
         "JlptLevel",
+        "LanguageCode",
         "LimitsResponse",
       ].sort(),
     );

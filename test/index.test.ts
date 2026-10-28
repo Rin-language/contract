@@ -11,6 +11,7 @@ describe("public entry point", () => {
         "Edit",
         "ErrorType",
         "JlptLevel",
+        "LanguageCode",
         "LimitsResponse",
       ].sort(),
     );
