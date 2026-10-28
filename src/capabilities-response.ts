@@ -2,6 +2,7 @@ import { z } from "zod";
 import { ErrorType } from "./error-type.js";
 import { LanguageCode } from "./language-code.js";
 import { Level } from "./level.js";
+import { NonBlankString } from "./non-blank-string.js";
 
 const hasNoDuplicate = (values: readonly string[]) =>
   new Set(values).size === values.length;
@@ -14,6 +15,12 @@ export const LanguageCapabilities = z.strictObject({
     .refine(hasNoDuplicate, "error types must be unique"),
   // Ordered from the lowest level to the highest (N5 to N1, A1 to C2).
   levels: z.array(Level).min(1).refine(hasNoDuplicate, "levels must be unique"),
+  // The skills this language rates (reading, listening, ...): the valid values
+  // of SkillRating.skill.
+  skills: z
+    .array(NonBlankString)
+    .min(1)
+    .refine(hasNoDuplicate, "skills must be unique"),
 });
 export type LanguageCapabilities = z.infer<typeof LanguageCapabilities>;
 
