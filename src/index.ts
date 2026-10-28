@@ -1,3 +1,4 @@
+export { ActivityKind } from "./activity-kind.js";
 export { ApiError, ApiErrorCode } from "./api-error.js";
 export {
   CapabilitiesResponse,

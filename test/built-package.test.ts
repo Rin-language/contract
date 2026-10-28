@@ -11,6 +11,7 @@ describe("built package", () => {
     expect(Object.keys(api).sort()).toEqual(
       [
         "API_VERSION",
+        "ActivityKind",
         "ApiError",
         "ApiErrorCode",
         "CapabilitiesResponse",
@@ -43,6 +44,7 @@ describe("built package", () => {
     const declarations = readFileSync(typesUrl, "utf8");
 
     for (const name of [
+      "ActivityKind",
       "ApiError",
       "ApiErrorCode",
       "CapabilitiesResponse",
