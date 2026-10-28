@@ -14,6 +14,7 @@ describe("public entry point", () => {
         "Edit",
         "ErrorType",
         "Id",
+        "IsoDateTime",
         "LanguageCapabilities",
         "LanguageCode",
         "Level",
