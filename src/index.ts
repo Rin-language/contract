@@ -19,3 +19,4 @@ export { LimitsResponse } from "./limits-response.js";
 export { Page } from "./page.js";
 export { SkillRating } from "./skill-rating.js";
 export { UserProfile } from "./user-profile.js";
+export { UserProfileUpdate } from "./user-profile-update.js";

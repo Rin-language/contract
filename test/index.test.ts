@@ -25,6 +25,7 @@ describe("public entry point", () => {
         "Page",
         "SkillRating",
         "UserProfile",
+        "UserProfileUpdate",
       ].sort(),
     );
   });

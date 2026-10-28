@@ -30,6 +30,7 @@ describe("built package", () => {
         "Page",
         "SkillRating",
         "UserProfile",
+        "UserProfileUpdate",
       ].sort(),
     );
   });
@@ -61,6 +62,7 @@ describe("built package", () => {
       "Page",
       "SkillRating",
       "UserProfile",
+      "UserProfileUpdate",
     ]) {
       expect(declarations).toMatch(new RegExp(`type ${name}\\b`));
     }

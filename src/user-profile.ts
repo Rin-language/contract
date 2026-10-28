@@ -12,8 +12,8 @@ export const UserProfile = z.strictObject({
   timezone: NonBlankString,
   // Absent until the user declares it; its scale depends on targetLanguage.
   declaredLevel: Level.optional(),
-  // Read-only: computed by the server, which ignores this field in a request.
-  // The default keeps a profile without ratings valid.
+  // Read-only: computed by the server. Clients send UserProfileUpdate, which
+  // has no such field. The default keeps a profile without ratings valid.
   skillRatings: z.array(SkillRating).default([]),
 });
 export type UserProfile = z.infer<typeof UserProfile>;
