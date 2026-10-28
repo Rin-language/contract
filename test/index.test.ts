@@ -11,6 +11,7 @@ describe("public entry point", () => {
         "CapabilitiesResponse",
         "CorrectionRequest",
         "CorrectionResponse",
+        "DayKey",
         "Edit",
         "ErrorType",
         "Id",

@@ -6,6 +6,7 @@ export {
 export { API_VERSION } from "./constants.js";
 export { CorrectionRequest } from "./correction-request.js";
 export { CorrectionResponse } from "./correction-response.js";
+export { DayKey } from "./day-key.js";
 export { Edit } from "./edit.js";
 export { ErrorType } from "./error-type.js";
 export { Id } from "./id.js";
