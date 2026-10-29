@@ -30,6 +30,10 @@ Open-core language immersion app, focused on Japanese first but designed to hand
 
 - Work in plan mode first on foundations and anything touching the contract.
 - One branch and one commit series per slice. Small commits.
+- Use the `superpowers` skills: brainstorming before design, writing-plans for a plan, test-driven-development for code, systematic-debugging for bugs, requesting-code-review to detect potential problems, verification-before-completion before claiming done.
+- Document for other users at the end of every feature, besides the changes-context note: this project is open source and used by others, so every config key and every technical choice a user may want to adjust is documented in `docs/` (the future wiki). Write it for AI models, since few people read docs now: one topic per file, a one-line summary at the top, exact names, a table of key, default, allowed values and effect, complete copy-pasteable examples, security caveats, self-contained text with no "see above". Update the existing file instead of duplicating it.
+- Security first: before coding, describe the potential security flaws (threats, abuse cases) of the slice, and again in the review.
+- Model choice for subagents: Haiku for mechanical tasks that need no reasoning (e.g. writing a test from a written test description); Opus for the tasks that matter (code review, security review).
 - Definition of done: see BIBLE.md.
 - Commands (pnpm): `pnpm install`, `pnpm test` (rebuilds `dist/` first), `pnpm lint` (Biome), `pnpm format`, `pnpm typecheck`, `pnpm build` (tsup). Keep this file updated when they change.
 - Release: add a changeset with `pnpm changeset`; to release, run `pnpm changeset version` on a release branch, merge it (`main` is protected, so everything goes through a PR), then `pnpm publish --access public` from `main` and tag `vX.Y.Z`.
