@@ -55,8 +55,10 @@ describe("CapabilitiesResponse", () => {
 
   it("rejects an unknown key", () => {
     expect(
-      CapabilitiesResponse.safeParse({ languages: [japanese], plan: "pro" })
-        .success,
+      CapabilitiesResponse.safeParse({
+        languages: [japanese],
+        unknownKey: true,
+      }).success,
     ).toBe(false);
   });
 

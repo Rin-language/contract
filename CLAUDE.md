@@ -1,23 +1,20 @@
 # Rin (working name)
 
-Open-core language immersion app, focused on Japanese first but designed to handle several languages. Writing practice with AI correction and daily prompts, an epub reader, a streak shared by all activities, and a curated list of native content in the target language (v1). A recommendation/curation system comes in v2.
+Open-source language immersion app, focused on Japanese first but designed to handle several languages. Writing practice with AI correction and daily prompts, an epub reader, a streak shared by all activities, and a list of native content in the target language.
 
 @BIBLE.md
 
 ## Philosophy
 
 - The core is open source. Technical users self-host it, plug in their own AI API or run models locally.
-- The paid offer is zero friction: a hosted service with the data (the curated list), sync, later the recommendation system and possibly a mobile app. Planned price: 5 USD/month.
-- Self-hosted and hosted must run the SAME client and the SAME core handlers. Only the base URL and the injected providers differ.
-- Free tools matter to the author. Never cripple the open-source core to push the paid plan.
+- Every deployment runs the SAME client and the SAME core handlers. Only the configuration and the injected providers differ.
+- Free tools matter to the author. Never cripple the open-source core.
 
 ## Repos
 
-- `contract` (public, separate repo, published as a versioned npm package): Zod schemas and inferred types only. No business logic, no runtime dependency besides Zod. Single source of truth shared by core, cloud and mobile.
+- `contract` (public, separate repo, published as a versioned npm package): Zod schemas and inferred types only. No business logic, no runtime dependency besides Zod. Single source of truth shared by every client and server of the API.
 - `core` (public, license to be decided: AGPL or BSL): web client, base server, correction/streak/reader/list logic, docker compose. Depends on `contract`. This repo is the one you are in.
-- `cloud` (private, later): auth, Stripe, quota and cost ledger, managed LLM gateway, sync. Imports `core`, depends on `contract`.
-- `mobile` (later): depends on `contract` only.
-- Start with `contract` and `core`. Create `cloud` and `mobile` only when a real need appears.
+- Start with `contract` and `core`.
 
 ### Contract rules
 

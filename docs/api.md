@@ -8,7 +8,7 @@ Cross-cutting conventions of `@rin-language/contract`, its error codes and examp
 - **JSDoc** on every export, shown by the IDE where the package is used.
 - **Changes between versions:** [CHANGELOG.md](../CHANGELOG.md).
 
-The package defines **payload shapes only**. Routes, authentication and rate limiting belong to `core` and `cloud`. `API_VERSION` (`"v1"`) is the version of the API these shapes belong to and is meant to be used as the route prefix.
+The package defines **payload shapes only**. Routes, authentication and rate limiting belong to the server that implements the API (`core`). `API_VERSION` (`"v1"`) is the version of the API these shapes belong to and is meant to be used as the route prefix.
 
 `Page` is a factory, not a schema, so no JSON Schema is generated for it. Instantiate it for the items you serve, then convert: `z.toJSONSchema(Page(Item), { io: "output" })`.
 
